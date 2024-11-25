@@ -30,14 +30,14 @@ void disableRawMode() {
   tcsetattr(STDIN_FILENO, TCSAFLUSH, &term);
 }
 
+// Base Figure class
 class Figure {
 public:
-  Figure(int x, int y, int matrix[4][4]) {
-    this->x = x;
-    this->y = y;
-    for (int y = 0; y < 4; y++) {
-      for (int x = 0; x < 4; x++) {
-        this->matrix[y][x] = matrix[y][x];
+  Figure(int x, int y) : x(x), y(y) {
+    // Initialize matrix to zeros
+    for (int i = 0; i < 4; i++) {
+      for (int j = 0; j < 4; j++) {
+        matrix[i][j] = 0;
       }
     }
   }
@@ -51,6 +51,8 @@ public:
       }
     }
   }
+
+  virtual ~Figure() = default;
 
   void moveLeft() { x--; }
   void moveRight() { x++; }
@@ -91,33 +93,9 @@ public:
   }
 
   bool isActiveChar(int x, int y) { return matrix[y][x] == 1; }
+
   bool isActiveAt(int x, int y) {
     return x >= 0 && x < 4 && y >= 0 && y < 4 && matrix[y][x] == 1;
-  }
-
-  static Figure *createL(int x, int y) {
-    int matrix[4][4] = {{1, 0, 0, 0}, {1, 0, 0, 0}, {1, 1, 0, 0}, {0, 0, 0, 0}};
-    return new Figure(x, y, matrix);
-  }
-
-  static Figure *createT(int x, int y) {
-    int matrix[4][4] = {{0, 1, 0, 0}, {1, 1, 0, 0}, {0, 1, 0, 0}, {0, 0, 0, 0}};
-    return new Figure(x, y, matrix);
-  }
-
-  static Figure *createO(int x, int y) {
-    int matrix[4][4] = {{1, 1, 0, 0}, {1, 1, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}};
-    return new Figure(x, y, matrix);
-  }
-
-  static Figure *createI(int x, int y) {
-    int matrix[4][4] = {{1, 0, 0, 0}, {1, 0, 0, 0}, {1, 0, 0, 0}, {1, 0, 0, 0}};
-    return new Figure(x, y, matrix);
-  }
-
-  static Figure *createZ(int x, int y) {
-    int matrix[4][4] = {{1, 0, 0, 0}, {1, 1, 0, 0}, {0, 1, 0, 0}, {0, 0, 0, 0}};
-    return new Figure(x, y, matrix);
   }
 
   int getX() { return x; }
@@ -125,9 +103,85 @@ public:
   void setX(int x) { this->x = x; }
   void setY(int y) { this->y = y; }
 
-private:
+protected:
   int x, y;
   int matrix[4][4];
+};
+
+// L-shaped figure
+class LFigure : public Figure {
+public:
+  LFigure(int x, int y) : Figure(x, y) {
+    matrix[0][0] = 1;
+    matrix[1][0] = 1;
+    matrix[2][0] = 1;
+    matrix[2][1] = 1;
+  }
+};
+
+// T-shaped figure
+class TFigure : public Figure {
+public:
+  TFigure(int x, int y) : Figure(x, y) {
+    matrix[0][1] = 1;
+    matrix[1][0] = 1;
+    matrix[1][1] = 1;
+    matrix[2][1] = 1;
+  }
+};
+
+// O-shaped figure
+class OFigure : public Figure {
+public:
+  OFigure(int x, int y) : Figure(x, y) {
+    matrix[0][0] = 1;
+    matrix[0][1] = 1;
+    matrix[1][0] = 1;
+    matrix[1][1] = 1;
+  }
+};
+
+// I-shaped figure
+class IFigure : public Figure {
+public:
+  IFigure(int x, int y) : Figure(x, y) {
+    matrix[0][0] = 1;
+    matrix[1][0] = 1;
+    matrix[2][0] = 1;
+    matrix[3][0] = 1;
+  }
+};
+
+// Z-shaped figure
+class ZFigure : public Figure {
+public:
+  ZFigure(int x, int y) : Figure(x, y) {
+    matrix[0][0] = 1;
+    matrix[1][0] = 1;
+    matrix[1][1] = 1;
+    matrix[2][1] = 1;
+  }
+};
+
+// Factory class for creating figures
+class FigureFactory {
+public:
+  static Figure *createFigure(char type, int x, int y) {
+    switch (type) {
+    case 'L':
+      return new LFigure(x, y);
+    case 'T':
+      return new TFigure(x, y);
+    case 'O':
+      return new OFigure(x, y);
+    case 'I':
+      return new IFigure(x, y);
+    case 'Z':
+      return new ZFigure(x, y);
+    default:
+      return nullptr;
+    }
+  }
 };
 
 class Board {
@@ -214,15 +268,15 @@ private:
     int randNum = (rand() % 5) + 1;
     switch (randNum) {
     case 1:
-      return Figure::createL(x, y);
+      return FigureFactory::createFigure('L', x, y);
     case 2:
-      return Figure::createT(x, y);
+      return FigureFactory::createFigure('T', x, y);
     case 3:
-      return Figure::createO(x, y);
+      return FigureFactory::createFigure('O', x, y);
     case 4:
-      return Figure::createI(x, y);
+      return FigureFactory::createFigure('I', x, y);
     case 5:
-      return Figure::createZ(x, y);
+      return FigureFactory::createFigure('Z', x, y);
     default:
       return nullptr;
     }
