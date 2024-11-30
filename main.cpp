@@ -128,7 +128,7 @@ public:
     matrix[2][1] = 1;
   }
 
-protected:
+public:
   string getName() { return "L"; }
 };
 
